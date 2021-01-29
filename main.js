@@ -29,7 +29,7 @@ exports.digest = digest = (options) => {
 
 	// Backwards compatibility - deprecated
 	if (options.key != null) {
-		console.warn("@levminer/speakeasy - Deprecation Notice - Specifying the secret using `key` is no longer supported. Use `secret` instead.")
+		console.warn("@peter-eid/speakeasy - Deprecation Notice - Specifying the secret using `key` is no longer supported. Use `secret` instead.")
 		secret = options.key
 	}
 
@@ -88,7 +88,7 @@ exports.hotp = hotpGenerate = (options) => {
 	const digits = (options.digits != null ? options.digits : options.length) || 6
 	if (options.length != null)
 		console.warn(
-			"@levminer/speakeasy - Deprecation Notice - Specifying token digits using `length` is no longer supported. Use `digits` instead."
+			"@peter-eid/speakeasy - Deprecation Notice - Specifying token digits using `length` is no longer supported. Use `digits` instead."
 		)
 
 	// digest the options
@@ -242,7 +242,7 @@ exports._counter = _counter = (options) => {
 	const epoch = (options.epoch != null ? options.epoch * 1000 : options.initial_time * 1000) || 0
 	if (options.initial_time != null)
 		console.warn(
-			"@levminer/speakeasy - Deprecation Notice - Specifying the epoch using `initial_time` is no longer supported. Use `epoch` instead."
+			"@peter-eid/speakeasy - Deprecation Notice - Specifying the epoch using `initial_time` is no longer supported. Use `epoch` instead."
 		)
 
 	return Math.floor((time - epoch) / step / 1000)
@@ -431,6 +431,8 @@ exports.totp.verify = totpVerify = (options) => {
  *   Authenticator-compatible otpauth:// URL (only returns otpauth:// URL, no
  *   QR code)
  * @param {String} [options.name] The name to use with Google Authenticator.
+ * @param {String} [options.issuer] The provider or service with which the
+ *   secret key is associated.
  * @param {Boolean} [options.qr_codes=false] (DEPRECATED. Do not use to prevent
  *   leaking of secret to a third party. Use your own QR code implementation.)
  *   Output QR code URLs for the token.
@@ -445,6 +447,7 @@ exports.generateSecret = generateSecret = (options) => {
 	if (!options) options = {}
 	const length = options.length || 32
 	const name = encodeURIComponent(options.name || "SecretKey")
+	const issuer = options.issuer
 	const qr_codes = options.qr_codes || false
 	const google_auth_qr = options.google_auth_qr || false
 	const otpauth_url = options.otpauth_url != null ? options.otpauth_url : true
@@ -467,7 +470,7 @@ exports.generateSecret = generateSecret = (options) => {
 	// generate some qr codes if requested
 	if (qr_codes) {
 		console.warn(
-			"@levminer/speakeasy - Deprecation Notice - generateSecret() QR codes are deprecated and no longer supported. Please use your own QR code implementation."
+			"@peter-eid/speakeasy - Deprecation Notice - generateSecret() QR codes are deprecated and no longer supported. Please use your own QR code implementation."
 		)
 		SecretKey.qr_code_ascii = `https://chart.googleapis.com/chart?chs=166x166&chld=L|0&cht=qr&chl=${encodeURIComponent(SecretKey.ascii)}`
 		SecretKey.qr_code_hex = `https://chart.googleapis.com/chart?chs=166x166&chld=L|0&cht=qr&chl=${encodeURIComponent(SecretKey.hex)}`
@@ -479,13 +482,14 @@ exports.generateSecret = generateSecret = (options) => {
 		SecretKey.otpauth_url = exports.otpauthURL({
 			secret: SecretKey.ascii,
 			label: name,
+			issuer: issuer
 		})
 	}
 
 	// generate a QR code for use in Google Authenticator if requested
 	if (google_auth_qr) {
 		console.warn(
-			"@levminer/speakeasy - Deprecation Notice - generateSecret() Google Auth QR code is deprecated and no longer supported. Please use your own QR code implementation."
+			"@peter-eid/speakeasy - Deprecation Notice - generateSecret() Google Auth QR code is deprecated and no longer supported. Please use your own QR code implementation."
 		)
 		SecretKey.google_auth_qr = `https://chart.googleapis.com/chart?chs=166x166&chld=L|0&cht=qr&chl=${encodeURIComponent(
 			exports.otpauthURL({ secret: SecretKey.base32, label: name })
@@ -498,7 +502,7 @@ exports.generateSecret = generateSecret = (options) => {
 // Backwards compatibility - generate_key is deprecated
 exports.generate_key = util.deprecate((options) => {
 	return exports.generateSecret(options)
-}, "@levminer/speakeasy - Deprecation Notice - `generate_key()` is depreciated, please use `generateSecret()` instead.")
+}, "@peter-eid/speakeasy - Deprecation Notice - `generate_key()` is depreciated, please use `generateSecret()` instead.")
 
 /**
  * Generates a key of a certain length (default 32) from A-Z, a-z, 0-9, and
@@ -525,7 +529,7 @@ exports.generateSecretASCII = generateSecretASCII = (length, symbols) => {
 // Backwards compatibility - generate_key_ascii is deprecated
 exports.generate_key_ascii = util.deprecate((length, symbols) => {
 	return exports.generateSecretASCII(length, symbols)
-}, "@levminer/speakeasy - Deprecation Notice - `generate_key_ascii()` is depreciated, please use `generateSecretASCII()` instead.")
+}, "@peter-eid/speakeasy - Deprecation Notice - `generate_key_ascii()` is depreciated, please use `generateSecretASCII()` instead.")
 
 /**
  * Generate a Google Authenticator-compatible otpauth:// URL for passing the
@@ -559,18 +563,18 @@ exports.generate_key_ascii = util.deprecate((length, symbols) => {
  *   base64). If the key is not encoded in Base-32, it will be reencoded.
  * @return {String} A URL suitable for use with the Google Authenticator.
  * @throws Error if secret or label is missing, or if hotp is used and a
-    counter is missing, if the type is not one of `hotp` or `totp`, if the
-    number of digits is non-numeric, or an invalid period is used. Warns if
-    the number of digits is not either 6 or 8 (though 6 is the only one
-    supported by Google Authenticator), and if the hashihng algorithm is
-    not one of the supported SHA1, SHA256, or SHA512.
+	counter is missing, if the type is not one of `hotp` or `totp`, if the
+	number of digits is non-numeric, or an invalid period is used. Warns if
+	the number of digits is not either 6 or 8 (though 6 is the only one
+	supported by Google Authenticator), and if the hashihng algorithm is
+	not one of the supported SHA1, SHA256, or SHA512.
  * @see https://github.com/google/google-authenticator/wiki/Key-Uri-Format
  */
 
 exports.otpauthURL = otpauthURL = (options) => {
 	// unpack options
 	let secret = options.secret
-	const label = options.label
+	let label = options.label
 	const issuer = options.issuer
 	const type = (options.type || "totp").toLowerCase()
 	const counter = options.counter
@@ -585,16 +589,16 @@ exports.otpauthURL = otpauthURL = (options) => {
 		case "hotp":
 			break
 		default:
-			throw new Error(`@levminer/speakeasy - otpauthURL - Invalid type \`${type}\`; must be \`hotp\` or \`totp\``)
+			throw new Error(`@peter-eid/speakeasy - otpauthURL - Invalid type \`${type}\`; must be \`hotp\` or \`totp\``)
 	}
 
 	// validate required options
-	if (!secret) throw new Error("@levminer/speakeasy - otpauthURL - Missing secret")
-	if (!label) throw new Error("@levminer/speakeasy - otpauthURL - Missing label")
+	if (!secret) throw new Error("@peter-eid/speakeasy - otpauthURL - Missing secret")
+	if (!label) throw new Error("@peter-eid/speakeasy - otpauthURL - Missing label")
 
 	// require counter for HOTP
 	if (type === "hotp" && (counter === null || typeof counter === "undefined")) {
-		throw new Error("@levminer/speakeasy - otpauthURL - Missing counter value for HOTP")
+		throw new Error("@peter-eid/speakeasy - otpauthURL - Missing counter value for HOTP")
 	}
 
 	// convert secret to base32
@@ -603,7 +607,10 @@ exports.otpauthURL = otpauthURL = (options) => {
 
 	// build query while validating
 	const query = { secret: secret }
-	if (issuer) query.issuer = issuer
+	if (issuer) {
+		query.issuer = issuer
+		label = `${issuer}:${label}`
+	}
 
 	// validate algorithm
 	if (algorithm != null) {
@@ -613,7 +620,7 @@ exports.otpauthURL = otpauthURL = (options) => {
 			case "SHA512":
 				break
 			default:
-				console.warn("@levminer/speakeasy - otpauthURL - Warning - Algorithm generally should be SHA1, SHA256, or SHA512")
+				console.warn("@peter-eid/speakeasy - otpauthURL - Warning - Algorithm generally should be SHA1, SHA256, or SHA512")
 		}
 		query.algorithm = algorithm.toUpperCase()
 	}
@@ -621,14 +628,14 @@ exports.otpauthURL = otpauthURL = (options) => {
 	// validate digits
 	if (digits != null) {
 		if (isNaN(digits)) {
-			throw new Error(`@levminer/speakeasy - otpauthURL - Invalid digits \`${digits}\``)
+			throw new Error(`@peter-eid/speakeasy - otpauthURL - Invalid digits \`${digits}\``)
 		} else {
 			switch (parseInt(digits, 10)) {
 				case 6:
 				case 8:
 					break
 				default:
-					console.warn("@levminer/speakeasy - otpauthURL - Warning - Digits generally should be either 6 or 8")
+					console.warn("@peter-eid/speakeasy - otpauthURL - Warning - Digits generally should be either 6 or 8")
 			}
 		}
 		query.digits = digits
@@ -638,7 +645,7 @@ exports.otpauthURL = otpauthURL = (options) => {
 	if (period != null) {
 		period = parseInt(period, 10)
 		if (~~period !== period) {
-			throw new Error(`@levminer/speakeasy - otpauthURL - Invalid period \`${period}\``)
+			throw new Error(`@peter-eid/speakeasy - otpauthURL - Invalid period \`${period}\``)
 		}
 		query.period = period
 	}

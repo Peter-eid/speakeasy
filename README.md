@@ -1,12 +1,6 @@
-# @levminer/speakeasy
+# @peter-eid/speakeasy
 
--   This is a fork of the original speakeasy. I'm just modernized and fixed some stuff:
-
--   Use Buffer.alloc() instead new Buffer
-
--   ES6 syntax: let, const, arrow functions
-
--   Fixed some known bugs
+-   This is a fork of @levminerspeakeasy.  Added issuer to the otpauth_url:
 
 ---
 
@@ -33,7 +27,7 @@ fork of Speakeasy, and [notp][].
 ## Install
 
 ```js
-npm i @levminer/speakeasy
+npm i @peter-eid/speakeasy
 ```
 
 <a name="two-factor"></a>
@@ -127,7 +121,7 @@ Now you're done implementing two-factor authentication!
 ## General Usage
 
 ```js
-const speakeasy = require("@levminer/speakeasy")
+const speakeasy = require("@peter-eid/speakeasy")
 ```
 
 #### Generating a key
